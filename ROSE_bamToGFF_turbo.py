@@ -17,8 +17,8 @@ import os
 import string
 import subprocess
 
-        
-        
+
+
 
 
 
@@ -31,16 +31,16 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
     bam = Bam(bamFile)
 
     #getting RPM normalization
-    if rpm:    
+    if rpm:
         MMR= round(float(bam.getTotalReads('mapped'))/1000000,4)
     else:
         MMR = 1
 
     print('using a MMR value of %s' % (MMR))
 
-    #creating a sense trans 
+    #creating a sense trans
     senseTrans = maketrans('-+.','+-+')
-    
+
     #reading in the gff
     if type(gff) == str:
         gff = parseTable(gff,'\t')
@@ -55,10 +55,10 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
             gffLocus = Locus(line[0],int(line[3]),int(line[4]),line[6],line[1])
             binSizeList.append(gffLocus.len()/binSize)
         binSizeList = uniquify(binSizeList)
-        if len(binSizeList) > 1: 
+        if len(binSizeList) > 1:
             print('WARNING: lines in gff are of different length. Output clustergram will have variable row length')
-        newGFF.append(['GENE_ID','locusLine'] + [str(x*binSize)+'_'+bamFile.split('/')[-1] for x in range(1,max(binSizeList)+1,1)])        
-        
+        newGFF.append(['GENE_ID','locusLine'] + [str(x*binSize)+'_'+bamFile.split('/')[-1] for x in range(1,max(binSizeList)+1,1)])
+
     #setting up a maxtrix table
     if matrix:
         newGFF.append(['GENE_ID','locusLine'] + ['bin_'+str(n)+'_'+bamFile.split('/')[-1] for n in range(1,int(matrix)+1,1)])
@@ -70,10 +70,10 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
     for line in gff:
         line = line[0:9]
         if ticker%100 == 0:
-            print ticker
+            print(ticker)
         ticker+=1
         gffLocus = Locus(line[0],int(line[3]),int(line[4]),line[6],line[1])
-        
+
         #get the nBin and binSize
         if clusterGram:
             nBin =gffLocus.len()/int(clusterGram)
@@ -81,7 +81,7 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
         if matrix:
             nBin = int(matrix)
             binSize = gffLocus.len()/nBin
-            
+
         #flippy flip if sense is negative
         if sense == '-':
             bamSense = string.translate(gffLocus.sense(),senseTrans)
@@ -89,7 +89,7 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
             bamSense = gffLocus.sense()
         else:
             bamSense = '.'
-        #using the bamLiquidator to get the readstring            
+        #using the bamLiquidator to get the readstring
         #print('using nBin of %s' % nBin)
         bamliquidatorString = '/usr/bin/bamliquidator'
         bamCommand = "%s %s %s %s %s %s %s %s" % (bamliquidatorString,bamFile,line[0],gffLocus.start(),gffLocus.end(),bamSense,nBin,extension)
@@ -97,29 +97,29 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
         getReads = subprocess.Popen(bamCommand,stdin = subprocess.PIPE,stderr = subprocess.PIPE,stdout = subprocess.PIPE,shell = True)
         readString = getReads.communicate()
         denList = readString[0].split('\n')[:-1]
-        
+
         #flip the denList if the actual gff region is -
         if gffLocus.sense() == '-':
             denList = denList[::-1]
 
         #converting from units of total bp of read sequence per bin to rpm/bp
         denList = [round(float(x)/binSize/MMR,4) for x in denList]
-        
+
         #if the gff region is - strand, flip the
 
         clusterLine = [gffLocus.ID(),gffLocus.__str__()] + denList
         newGFF.append(clusterLine)
-            
+
     return newGFF
-        
-                
-                
-            
 
 
-            
-                
-    
+
+
+
+
+
+
+
 def convertEnrichedRegionsToGFF(enrichedRegionFile):
     '''converts a young lab enriched regions file into a gff'''
     newGFF = []
@@ -133,7 +133,7 @@ def convertEnrichedRegionsToGFF(enrichedRegionFile):
         i+=1
     return newGFF
 
-        
+
 #python bamToGFF.py --density --floor 0 -b test.sam.sorted.bam -g pol2_sample.gff -o pol2_sample_mapped.gff
 
 def main():
@@ -164,7 +164,7 @@ def main():
     print(options)
     print(args)
 
-   
+
     if options.sense:
         if ['+','-','.','both'].count(options.sense) == 0:
             print('ERROR: sense flag must be followed by +,-,.,both')
@@ -183,7 +183,7 @@ def main():
             print('ERROR: User must specify an integer bin number for matrix (try 50)')
             parser.print_help()
             exit()
-            
+
     if options.cluster:
         try:
             int(options.cluster)
@@ -192,8 +192,8 @@ def main():
             parser.print_help()
             exit()
 
-    
-    
+
+
     if options.input and options.bam:
         inputFile = options.input
         if inputFile.split('.')[-1] != 'gff':
@@ -203,7 +203,7 @@ def main():
             gffFile = inputFile
 
         bamFile = options.bam
-        
+
         if options.output == None:
             output = os.getcwd() + inputFile.split('/')[-1]+'.mapped'
         else:
@@ -214,12 +214,12 @@ def main():
         elif options.matrix:
             print('mapping to GFF and making a matrix with fixed bin number')
             newGFF = mapBamToGFF(bamFile,gffFile,options.sense,int(options.extension),options.rpm,None,int(options.matrix))
-            
+
         unParseTable(newGFF,output,'\t')
     else:
         parser.print_help()
-        
 
-        
+
+
 if __name__ == "__main__":
     main()
