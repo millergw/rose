@@ -287,13 +287,13 @@ def main():
 		ROSE_utils.bedToGFF(options.input,inputGFFFile)
 	elif options.input.split('.')[-1] =='gff':
 		#COPY THE INPUT GFF TO THE GFF FOLDER
-	inputGFFFile = options.input
+		inputGFFFile = options.input
 		os.system('cp %s %s' % (inputGFFFile,gffFolder))
 
 	else:
 		print('WARNING: INPUT FILE DOES NOT END IN .gff or .bed. ASSUMING .gff FILE FORMAT')
 		#COPY THE INPUT GFF TO THE GFF FOLDER
-	inputGFFFile = options.input
+		inputGFFFile = options.input
 		os.system('cp %s %s' % (inputGFFFile,gffFolder))
 
 
@@ -335,7 +335,7 @@ def main():
 		'HG18':'%s/annotation/hg18_refseq.ucsc' % (cwd),
 		'MM9': '%s/annotation/mm9_refseq.ucsc' % (cwd),
 		'HG19':'%s/annotation/hg19_refseq.ucsc' % (cwd),
-	'HG38':'%s/annotation/hg38_refseq.ucsc' % (cwd),
+		'HG38':'%s/annotation/hg38_refseq.ucsc' % (cwd),
 		'MM8': '%s/annotation/mm8_refseq.ucsc' % (cwd),
 		'MM10':'%s/annotation/mm10_refseq.ucsc' % (cwd),
 		}
