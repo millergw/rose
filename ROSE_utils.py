@@ -345,6 +345,8 @@ class LocusCollection:
 	def __getKeyRange(self,locus):
 		start = locus.start() / self.__winSize
 		end = locus.end() / self.__winSize + 1 ## add 1 because of the range
+		print("start: "+ start + "\ntype(start): " + type(start))
+		print("end: "+ end + "\ntype(end): " + type(start))
 		return range(start,end)
 
 	def __len__(self): return len(self.__loci)
