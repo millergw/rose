@@ -9,14 +9,11 @@
 
 import sys
 
-
-
 import ROSE_utils
-
 
 import os
 
-from string import upper,join
+# from string import upper
 
 from collections import defaultdict
 
@@ -28,7 +25,7 @@ from collections import defaultdict
 
 
 def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True,searchWindow =50000,noFormatTable = False):
-    
+
     '''
     maps genes to enhancers. if uniqueGenes, reduces to gene name only. Otherwise, gives for each refseq
     '''
@@ -59,7 +56,7 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
     #50 is the internal parameter for LocusCollection and doesn't really matter
     tssCollection = ROSE_utils.LocusCollection(tssLoci,50)
 
-    
+
 
     geneDict = {'overlapping':defaultdict(list),'proximal':defaultdict(list)}
 
@@ -75,7 +72,7 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
         #first by enhancer
         enhancerToGeneTable = [enhancerTable[0]+['OVERLAP_GENES','PROXIMAL_GENES','CLOSEST_GENE']]
 
-        
+
     else:
         #set up the output tables
         #first by enhancer
@@ -87,7 +84,7 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
     #next make the gene to enhancer table
     geneToEnhancerTable = [['GENE_NAME','REFSEQ_ID','PROXIMAL_ENHANCERS','ENHANCER_RANKS','IS_SUPER']]
 
-        
+
 
 
     for line in enhancerTable:
@@ -95,29 +92,29 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
             continue
 
         enhancerString = '%s:%s-%s' % (line[1],line[2],line[3])
-        
+
         enhancerLocus = ROSE_utils.Locus(line[1],line[2],line[3],'.',line[0])
 
-        #overlapping genes are transcribed genes whose transcript is directly in the stitchedLocus         
-        overlappingLoci = transcribedCollection.getOverlap(enhancerLocus,'both')           
+        #overlapping genes are transcribed genes whose transcript is directly in the stitchedLocus
+        overlappingLoci = transcribedCollection.getOverlap(enhancerLocus,'both')
         overlappingGenes =[]
-        for overlapLocus in overlappingLoci:                
+        for overlapLocus in overlappingLoci:
             overlappingGenes.append(overlapLocus.ID())
 
         #proximalGenes are transcribed genes where the tss is within 50kb of the boundary of the stitched loci
-        proximalLoci = tssCollection.getOverlap(ROSE_utils.makeSearchLocus(enhancerLocus,searchWindow,searchWindow),'both')           
+        proximalLoci = tssCollection.getOverlap(ROSE_utils.makeSearchLocus(enhancerLocus,searchWindow,searchWindow),'both')
         proximalGenes =[]
         for proxLocus in proximalLoci:
             proximalGenes.append(proxLocus.ID())
 
 
-        distalLoci = tssCollection.getOverlap(ROSE_utils.makeSearchLocus(enhancerLocus,1000000,1000000),'both')           
+        distalLoci = tssCollection.getOverlap(ROSE_utils.makeSearchLocus(enhancerLocus,1000000,1000000),'both')
         distalGenes =[]
         for proxLocus in distalLoci:
             distalGenes.append(proxLocus.ID())
 
-            
-            
+
+
         overlappingGenes = ROSE_utils.uniquify(overlappingGenes)
         proximalGenes = ROSE_utils.uniquify(proximalGenes)
         distalGenes = ROSE_utils.uniquify(distalGenes)
@@ -150,14 +147,14 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
         if noFormatTable:
 
             newEnhancerLine = list(line)
-            newEnhancerLine.append(join(ROSE_utils.uniquify([startDict[x]['name'] for x in overlappingGenes]),','))
-            newEnhancerLine.append(join(ROSE_utils.uniquify([startDict[x]['name'] for x in proximalGenes]),','))
+            newEnhancerLine.append(','.join(ROSE_utils.uniquify([startDict[x]['name'] for x in overlappingGenes])))
+            newEnhancerLine.append(','.join(ROSE_utils.uniquify([startDict[x]['name'] for x in proximalGenes])))
             newEnhancerLine.append(closestGene)
 
         else:
             newEnhancerLine = line[0:9]
-            newEnhancerLine.append(join(ROSE_utils.uniquify([startDict[x]['name'] for x in overlappingGenes]),','))
-            newEnhancerLine.append(join(ROSE_utils.uniquify([startDict[x]['name'] for x in proximalGenes]),','))
+            newEnhancerLine.append(','.join(ROSE_utils.uniquify([startDict[x]['name'] for x in overlappingGenes])))
+            newEnhancerLine.append(','.join(ROSE_utils.uniquify([startDict[x]['name'] for x in proximalGenes])))
             newEnhancerLine.append(closestGene)
             newEnhancerLine += line[-2:]
 
@@ -169,7 +166,7 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
             geneDict['overlapping'][refID].append(enhancerString)
             rankDict[refID].append(int(line[-2]))
             superDict[refID].append(int(line[-1]))
-            
+
         overallGeneList+=proximalGenes
         for refID in proximalGenes:
             geneDict['proximal'][refID].append(enhancerString)
@@ -179,13 +176,13 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
 
 
     #End loop through
-    
+
     #Make table by gene
-    overallGeneList = ROSE_utils.uniquify(overallGeneList)  
+    overallGeneList = ROSE_utils.uniquify(overallGeneList)
 
     #use enhancer rank to order
     rankOrder = ROSE_utils.order([min(rankDict[x]) for x in overallGeneList])
-        
+
     usedNames = []
     for i in rankOrder:
         refID = overallGeneList[i]
@@ -195,13 +192,13 @@ def mapEnhancerToGene(annotFile,enhancerFile,transcribedFile='',uniqueGenes=True
             continue
         else:
             usedNames.append(geneName)
-        
+
         proxEnhancers = geneDict['overlapping'][refID]+geneDict['proximal'][refID]
-        
+
         superStatus = max(superDict[refID])
-        enhancerRanks = join([str(x) for x in rankDict[refID]],',')
-    
-        newLine = [geneName,refID,join(proxEnhancers,','),enhancerRanks,superStatus]
+        enhancerRanks = ','.join([str(x) for x in rankDict[refID]])
+
+        newLine = [geneName,refID,','.join(proxEnhancers),enhancerRanks,superStatus]
         geneToEnhancerTable.append(newLine)
 
     #resort enhancerToGeneTable
@@ -264,7 +261,7 @@ def main():
     if options.out:
         outFolder = ROSE_utils.formatFolder(options.out,True)
     else:
-        outFolder = join(enhancerFile.split('/')[0:-1],'/') + '/'
+        outFolder = '/'.join(enhancerFile.split('/')[0:-1]) + '/'
 
 
     #GETTING THE GENOME
@@ -288,7 +285,7 @@ def main():
         'MM10':'%s/annotation/mm10_refseq.ucsc' % (cwd),
         }
 
-    annotFile = genomeDict[upper(genome)]
+    annotFile = genomeDict[genome.upper()]
 
     #GETTING THE TRANSCRIBED LIST
     if options.geneList:

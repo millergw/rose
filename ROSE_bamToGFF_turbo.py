@@ -20,8 +20,6 @@ import subprocess
 
 
 
-
-
 def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram = None,matrix = None):
     '''maps reads from a bam to a gff'''
 
@@ -39,7 +37,7 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
     print('using a MMR value of %s' % (MMR))
 
     #creating a sense trans
-    senseTrans = maketrans('-+.','+-+')
+    senseTrans = str.maketrans('-+.','+-+')
 
     #reading in the gff
     if type(gff) == str:
@@ -84,7 +82,7 @@ def mapBamToGFF(bamFile,gff,sense = '.',extension = 200,rpm = False,clusterGram 
 
         #flippy flip if sense is negative
         if sense == '-':
-            bamSense = string.translate(gffLocus.sense(),senseTrans)
+            bamSense = gffLocus.sense().translate(senseTrans)
         elif sense == '+':
             bamSense = gffLocus.sense()
         else:
