@@ -19,6 +19,8 @@ import os
 
 from collections import defaultdict
 
+from copy import deepcopy
+
 
 #==================================================================
 #=================CHECKING REFERENCE COLLECTION====================
@@ -73,7 +75,7 @@ def regionStitching(inputGFF,stitchWindow,tssWindow,annotFile,removeTSS=True):
 		tssCollection = ROSE_utils.LocusCollection(tssLoci,50)
 
 		#gives all the loci in boundCollection
-		boundLoci = boundCollection.getLoci()
+		boundLoci = deepcopy(list(boundCollection.getLoci()))
 
 		#this loop will check if each bound region is contained by the TSS exclusion zone
 		#this will drop out a lot of the promoter only regions that are tiny
