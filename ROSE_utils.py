@@ -343,10 +343,11 @@ class LocusCollection:
 					self.__chrToCoordToLoci[chrKey][n].append(lcs)
 
 	def __getKeyRange(self,locus):
-		start = locus.start() / self.__winSize
-		end = locus.end() / self.__winSize + 1 ## add 1 because of the range
-		print("start: "+ start + "\ntype(start): " + type(start))
-		print("end: "+ end + "\ntype(end): " + type(start))
+		# porting to python 3: assuming that initial code intended to floor both the start and end variables
+		# start = locus.start() / self.__winSize
+		# end = locus.end() / self.__winSize + 1 ## add 1 because of the range
+		start = locus.start() // self.__winSize
+		end = locus.end() // self.__winSize + 1 ## add 1 because of the range
 		return range(start,end)
 
 	def __len__(self): return len(self.__loci)
@@ -575,7 +576,8 @@ def makeTSSLocus(gene,startDict,upstream,downstream):
 	given a startDict, make a locus for any gene's TSS w/ upstream and downstream windows
 	'''
 
-	start = startDict[gene]['start'][0]
+	lsVersion = list(startDict[gene]['start'])
+	start = lsVersion[0]
 	if startDict[gene]['sense'] =='-':
 		return Locus(startDict[gene]['chr'],start-downstream,start+upstream,'-',gene)
 	else:
